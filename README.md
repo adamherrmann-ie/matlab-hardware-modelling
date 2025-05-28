@@ -18,9 +18,19 @@ ml_simple_acc = sum(a .* b);
 
 We can add the concept of parallelism by looping over 4 samples at a time, but still using our the element wise multiply and sum function.
 
+```
+parallelism = 4;
+ml_simple_hw_acc = 0;
+            
+for out_index = 1:parallelism:length(a)
+    % Take parallelism samples at a time
+    ml_simple_hw_acc(end+1) = ml_simple_hw_acc(end) + sum(a(out_index:out_index+parallelism-1) .* b(out_index:out_index+parallelism-1)); %#ok
+end
+```
+
 ## Exact Hardware Matlab Model
 
-Finally to match exactly, we can add in the latency and adder tree. This should solve any precision differences when comparing the binary output of the actual hardware to the matlab model.
+Finally to match exactly, we can add in the latency and adder tree. This should solve any precision differences when comparing the binary output of the actual hardware to the matlab model. To model the delays, fifos are used to store values in a buffer for the next round of the loop.
 
 ## Example:
 
