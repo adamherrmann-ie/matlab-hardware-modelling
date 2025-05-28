@@ -39,14 +39,10 @@ classdef test_mac < matlab.unittest.TestCase
             % This will enable us to match the intermediate results; however, we may
             % have mismatches due to the actual hardware implementing an adder tree
             % instead of a straight summation.
-            
+
             parallelism = 4;
-            ml_simple_hw_acc = 0;
             
-            for out_index = 1:parallelism:length(a)
-                % Take parallelism samples at a time
-                ml_simple_hw_acc(end+1) = ml_simple_hw_acc(end) + sum(a(out_index:out_index+parallelism-1) .* b(out_index:out_index+parallelism-1)); %#ok
-            end
+            ml_simple_hw_acc = mac_simple_hardware(a, b, parallelism);
             
             if (debug)
                 fprintf("Simple Hardware Matlab Result:\t");
@@ -59,61 +55,8 @@ classdef test_mac < matlab.unittest.TestCase
             %  We will now add in the adder tree and delays to match the hardware implementation exactly
             
             sim_length = 40;
-            parallelism = 4;
-            ml_exact_hw_acc = zeros(sim_length,1);
             
-            prod_1_buffer = zeros(2,1);
-            prod_2_buffer = zeros(2,1);
-            prod_3_buffer = zeros(2,1);
-            prod_4_buffer = zeros(2,1);
-            
-            sum_1_buffer = zeros(2,1);
-            sum_2_buffer = zeros(2,1);
-            sum_3_buffer = zeros(2,1);
-            
-            output_buffer = zeros(2,1);
-            
-            in_index = 1;
-            
-            for out_index = 1:sim_length
-                % Products
-                if (in_index > length(a))
-                    prod_1 = 0; prod_2 = 0; prod_3 = 0; prod_4 = 0;
-                else
-                    prod_1 = a(in_index) * b(in_index);
-                    prod_2 = a(in_index + 1) * b(in_index + 1);
-                    prod_3 = a(in_index + 2) * b(in_index + 2);
-                    prod_4 = a(in_index + 3) * b(in_index + 3);
-                    in_index = in_index + parallelism;
-                end
-            
-                % Delay
-                prod_1_buffer = fifo_push(prod_1_buffer,prod_1);
-                prod_2_buffer = fifo_push(prod_2_buffer,prod_2);
-                prod_3_buffer = fifo_push(prod_3_buffer,prod_3);
-                prod_4_buffer = fifo_push(prod_4_buffer,prod_4);
-            
-                % Sum
-                sum_1 = (prod_1_buffer(end) + prod_2_buffer(end));
-                sum_2 = (prod_3_buffer(end) + prod_4_buffer(end));
-                
-                % Delay
-                sum_1_buffer = fifo_push(sum_1_buffer,sum_1);
-                sum_2_buffer = fifo_push(sum_2_buffer,sum_2);
-            
-                % Sum
-                sum_3 = sum_1_buffer(end) + sum_2_buffer(end);
-            
-                % Delay
-                sum_3_buffer = fifo_push(sum_3_buffer,sum_3);
-            
-                % Sum
-                sum_4 = output_buffer(1) + sum_3_buffer(end);
-                
-                % Delay
-                output_buffer = fifo_push(output_buffer,sum_4);
-                ml_exact_hw_acc(out_index) = output_buffer(end);
-            end
+            ml_exact_hw_acc = mac_exact_hardware(a, b, parallelism, sim_length);
             
             if (debug)
                 fprintf("Exact Hardware Matlab Result:\t");
@@ -187,8 +130,6 @@ classdef test_mac < matlab.unittest.TestCase
                 fprintf('✗ Exact Hardware and Simulink DO NOT match exactly\n');
             end
 
-            %testCase.verifyEqual(mantissa_simple_ml,mantissa_simple_hw);
-            %testCase.verifyEqual(mantissa_simple_hw,mantissa_exact_hw);
             testCase.verifyEqual(mantissa_exact_hw,mantissa_sl);
         end
     end
