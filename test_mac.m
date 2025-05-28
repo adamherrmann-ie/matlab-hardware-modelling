@@ -136,13 +136,13 @@ classdef test_mac < matlab.unittest.TestCase
             
             sl_a.signals.values     = a_padded;
             sl_a.time               = 0:1:length(a_padded)-1;
-            sl_a.signals.dimensions = parallelism;
+            sl_a.signals.dimensions = parallelism;              %# ok
             
             sl_b.signals.values     = b_padded;
             sl_b.time               = 0:1:length(b_padded)-1;
-            sl_b.signals.dimensions = parallelism;
+            sl_b.signals.dimensions = parallelism;              %# ok
             
-            simOut = sim('mac','FastRestart','off','SrcWorkspace','current','ReturnWorkspaceOutputs','on', 'StopTime', sprintf('%d',sim_length - 1));
+            simOut = sim('mac_simulink','FastRestart','off','SrcWorkspace','current','ReturnWorkspaceOutputs','on', 'StopTime', sprintf('%d',sim_length - 1));
             
             if (debug)
                 fprintf("Simulink Result:\t\t\t\t");
