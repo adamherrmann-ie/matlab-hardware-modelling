@@ -15,7 +15,7 @@ classdef test_mac < matlab.unittest.TestCase
 
             rng(seed);
 
-            vector_length = 100;
+            vector_length = 500;
             
             a = rand(vector_length,1);
             b = rand(vector_length,1);
@@ -84,6 +84,10 @@ classdef test_mac < matlab.unittest.TestCase
             sl_b.signals.values     = b_padded;
             sl_b.time               = 0:1:length(b_padded)-1;
             sl_b.signals.dimensions = parallelism;              %# ok
+
+            sl_valid.signals.values     = true(length(a_padded),1);
+            sl_valid.time               = 0:1:length(a_padded)-1;
+            sl_valid.signals.dimensions = 1;                    %# ok
             
             simOut = sim('mac_simulink','FastRestart','off','SrcWorkspace','current','ReturnWorkspaceOutputs','on', 'StopTime', sprintf('%d',sim_length - 1));
             
@@ -101,7 +105,7 @@ classdef test_mac < matlab.unittest.TestCase
             fprintf("\nIEEE 754 Double Precision Binary:\n");
             
             [sign,exponent,mantissa_simple_ml] = ieee754(ml_simple_acc);
-            fprintf("Simple Matlab Result:\t\t\t%.6f -> %s %s %s\n", ml_simple_acc, sign, exponent, mantissa_simple_ml);
+            fprintf("Simple Matlab Result:\t\t%.6f -> %s %s %s\n", ml_simple_acc, sign, exponent, mantissa_simple_ml);
             
             [sign,exponent,mantissa_simple_hw] = ieee754(ml_simple_hw_acc(end));
             fprintf("Simple Hardware Matlab Result:\t%.6f -> %s %s %s\n", ml_simple_hw_acc(end), sign, exponent, mantissa_simple_hw);
@@ -110,7 +114,7 @@ classdef test_mac < matlab.unittest.TestCase
             fprintf("Exact Hardware Matlab Result:\t%.6f -> %s %s %s\n", ml_exact_hw_acc(end), sign, exponent, mantissa_exact_hw);
             
             [sign,exponent,mantissa_sl] = ieee754(simOut.sl_acc.Data(end));
-            fprintf("Simulink Result:\t\t\t\t%.6f -> %s %s %s\n", simOut.sl_acc.Data(end), sign, exponent, mantissa_sl);
+            fprintf("Simulink Result:\t\t%.6f -> %s %s %s\n", simOut.sl_acc.Data(end), sign, exponent, mantissa_sl);
             
             if (mantissa_simple_ml == mantissa_simple_hw)
                 fprintf('✓ Simple Matlab and Simple Hardware match exactly\n');
